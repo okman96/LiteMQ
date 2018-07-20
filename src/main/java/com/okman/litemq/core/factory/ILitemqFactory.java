@@ -1,6 +1,7 @@
 package com.okman.litemq.core.factory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import com.okman.litemq.core.element.IElement;
@@ -15,8 +16,17 @@ import com.okman.litemq.exception.QueueNotFoundException;
  * @auth waxuan
  * @since 2018年7月19日下午2:57:04
  */
-public interface ILiteMQFactory {
+public interface ILitemqFactory {
 
+	/**
+	 * 每个实现类活抽象类，都需要拥有一份集合，用来存储其创建的队列
+	 *
+	 * @auth waxuan
+	 * @since 2018年7月20日下午1:44:10
+	 * @return
+	 */
+	Map<String, IQueue<IElement>> getQueueBucket();
+	
 	/**
 	 * 创建队列并开启遍历模式
 	 *
@@ -32,7 +42,7 @@ public interface ILiteMQFactory {
 	 * @throws KeyAleadyExistException
 	 * @throws ExecutorNotInjectException
 	 */
-	IQueue<? extends IElement> createAndLoop(String qualifiedQueueClassName, String key, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException;
+	IQueue<IElement> createAndLoop(String qualifiedQueueClassName, String key, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException;
 	
 	/**
 	 * 批量创建队列并开启遍历模式
@@ -63,7 +73,7 @@ public interface ILiteMQFactory {
 	 * @return
 	 * @throws Exception
 	 */
-	IQueue<? extends IElement> create(String qualifiedQueueClassName, String key) throws KeyAleadyExistException;
+	IQueue<IElement> create(String qualifiedQueueClassName, String key) throws KeyAleadyExistException;
 
 	/**
 	 * 批量创建队列
@@ -86,7 +96,7 @@ public interface ILiteMQFactory {
 	 * @return
 	 * 			如果未找到则返回null
 	 */
-	IQueue<? extends IElement> findQueue(String key);
+	IQueue<IElement> findQueue(String key);
 	
 	/**
 	 * 从工厂中删除队列，并停止队列遍历
@@ -129,7 +139,7 @@ public interface ILiteMQFactory {
 	 * @auth waxuan
 	 * @since 2018年7月19日下午3:08:58
 	 */
-	void startAllLoop();
+	void startAllLoop() throws ExecutorNotInjectException ;
 	
 	/**
 	 * 停止所有队列遍历模式
@@ -139,23 +149,4 @@ public interface ILiteMQFactory {
 	 */
 	void stopAllLoop();
 	
-	/**
-	 * 通过工厂放入元素
-	 * 
-	 * <p>可解决多队列时，随机放入的场景</p>
-	 *
-	 * @auth waxuan
-	 * @since 2018年7月19日下午3:46:41
-	 */
-	void randomOffer(IElement e);
-	
-	/**
-	 * 通过工厂放入元素
-	 *
-	 * <p>可解决多队列时，轮询放入的场景</p>
-	 *
-	 * @auth waxuan
-	 * @since 2018年7月19日下午3:47:41
-	 */
-	void loopOffer(IElement e);
 }

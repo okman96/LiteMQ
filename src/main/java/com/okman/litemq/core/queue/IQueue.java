@@ -75,5 +75,5 @@ public interface IQueue<IElement> extends java.util.Queue<IElement> {
 	 * @param time		单位：毫秒
 	 */
 	void await(long time);
-	
+
 }

@@ -57,7 +57,7 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
 	public void setExecutor(Executor executor) {
 		this.executor = executor;
 	}
-
+	
 	public void startLoop() throws ExecutorNotInjectException {
 		if (executor == null) {
 			throw new ExecutorNotInjectException("未注入Executor");

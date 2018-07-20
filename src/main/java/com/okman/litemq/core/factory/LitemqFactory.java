@@ -1,10 +1,8 @@
 package com.okman.litemq.core.factory;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -20,52 +18,77 @@ import com.okman.litemq.exception.QueueNotFoundException;
  * @auth waxuan
  * @since 2018年7月19日下午2:55:11
  */
-public class LiteMQFactory implements ILiteMQFactory {
+public class LitemqFactory implements ILitemqFactory {
 	
 	/**
-	 * 工厂放入元素的计数器
+	 * 存储队列集合
 	 */
-	private int counter;
+	private Map<String, IQueue<IElement>> queueBucket = new LinkedHashMap<String, IQueue<IElement>>();
 	
-	/**
-	 * 优先队列
-	 */
-	private Map<String, IQueue<? extends IElement>> queueMap = new LinkedHashMap<String, IQueue<? extends IElement>>();
+	public LitemqFactory() {
+		
+	}
+	
+	public LitemqFactory(String qualifiedQueueClassName, String key) throws KeyAleadyExistException {
+		this.create(qualifiedQueueClassName, key);
+	}
+	
+	public LitemqFactory(String qualifiedQueueClassName, List<String> keys) throws KeyAleadyExistException {
+		this.create(qualifiedQueueClassName, keys);
+	}
+	
+	public LitemqFactory(String qualifiedQueueClassName, String key, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
+		this.createAndLoop(qualifiedQueueClassName, key, executor);
+	}
+	
+	public LitemqFactory(String qualifiedQueueClassName, List<String> keys, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
+		this.createAndLoop(qualifiedQueueClassName, keys, executor);
+	}
 
-	public IQueue<? extends IElement> createAndLoop(String qualifiedQueueClassName, String key, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
-		if (queueMap.containsKey(key)) {
+	@Override
+	public Map<String, IQueue<IElement>> getQueueBucket() {
+		return this.queueBucket;
+	}
+	
+	@Override
+	public IQueue<IElement> createAndLoop(String qualifiedQueueClassName, String key, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
+		if (this.queueBucket.containsKey(key)) {
 			throw new KeyAleadyExistException("该key已存在");
 		}
-		IQueue<? extends IElement> queue = this.createQueueInReflect(qualifiedQueueClassName, key);
-		queueMap.put("name", queue);
+		IQueue<IElement> queue = this.createQueueInReflect(qualifiedQueueClassName, key);
 		queue.setExecutor(executor);
 		queue.startLoop();
+		this.queueBucket.put(key, queue);
 		return queue;
 	}
 	
+	@Override
 	public void createAndLoop(String qualifiedQueueClassName, List<String> keys, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
 		for (String key : keys) {
 			this.createAndLoop(qualifiedQueueClassName, key, executor);
 		}
 	}
 	
-	public IQueue<? extends IElement> create(String qualifiedQueueClassName, String key) throws KeyAleadyExistException {
-		if (queueMap.containsKey(key)) {
+	@Override
+	public IQueue<IElement> create(String qualifiedQueueClassName, String key) throws KeyAleadyExistException {
+		if (this.queueBucket.containsKey(key)) {
 			throw new KeyAleadyExistException("该key已存在");
 		}
-		IQueue<? extends IElement> queue = this.createQueueInReflect(qualifiedQueueClassName, qualifiedQueueClassName);
-		queueMap.put("name", queue);
+		IQueue<IElement> queue = this.createQueueInReflect(qualifiedQueueClassName, qualifiedQueueClassName);
+		this.queueBucket.put("name", queue);
 		return queue;
 	}
 	
+	@Override
 	public void create(String qualifiedQueueClassName, List<String> keys) throws KeyAleadyExistException {
 		for (String key : keys) {
 			this.create(qualifiedQueueClassName, key);
 		}
 	}
 	
-	public IQueue<? extends IElement> findQueue(String key) {
-		return queueMap.get(key);
+	@Override
+	public IQueue<IElement> findQueue(String key) {
+		return this.queueBucket.get(key);
 	}
 	
 	/**
@@ -78,9 +101,9 @@ public class LiteMQFactory implements ILiteMQFactory {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private IQueue<? extends IElement> createQueueInReflect(String qualifiedQueueClassName, String key) {
+	private IQueue<IElement> createQueueInReflect(String qualifiedQueueClassName, String key) {
 		Class<?> classObj = null;
-		IQueue<? extends IElement> queue = null;
+		IQueue<IElement> queue = null;
         try {
             classObj = Class.forName(qualifiedQueueClassName);
         } catch (Exception e) {
@@ -88,64 +111,56 @@ public class LiteMQFactory implements ILiteMQFactory {
         }
         try {
         	Constructor<?> constructor = classObj.getConstructor(String.class);  
-        	queue = (IQueue<? extends IElement>) constructor.newInstance(key); 
+        	queue = (IQueue<IElement>) constructor.newInstance(key); 
          } catch(Exception e) {
             e.printStackTrace();
          }
          return queue;
 	}
 
+	@Override
 	public void removeQueue(String key) throws QueueNotFoundException {
-		IQueue<? extends IElement> queue = queueMap.remove(key);
+		IQueue<IElement> queue = this.queueBucket.remove(key);
 		if (queue == null) {
 			throw new QueueNotFoundException("队列不存在");
 		}
 		queue.stopLoop();
 	}
 
+	@Override
 	public void startLoop(String key) throws QueueNotFoundException, ExecutorNotInjectException {
-		IQueue<? extends IElement> queue = findQueue(key);
+		IQueue<IElement> queue = findQueue(key);
 		if (queue == null) {
 			throw new QueueNotFoundException("队列不存在");
 		}
 		queue.startLoop();
 	}
 
+	@Override
 	public void stopLoop(String key) throws QueueNotFoundException {
-		IQueue<? extends IElement> queue = findQueue(key);
+		IQueue<IElement> queue = findQueue(key);
 		if (queue == null) {
 			throw new QueueNotFoundException("队列不存在");
 		}
 		queue.stopLoop();
 	}
 
+	@Override
 	public void startAllLoop() {
-		for (Map.Entry<String, IQueue<? extends IElement>> entry : queueMap.entrySet()) {
+		for (Map.Entry<String, IQueue<IElement>> entry : this.queueBucket.entrySet()) {
 			try {
 				entry.getValue().startLoop();
 			} catch (Exception e) {
+				System.err.println(e);
 			}
 			
         }
 	}
 
+	@Override
 	public void stopAllLoop() {
-		for (Map.Entry<String, IQueue<? extends IElement>> entry : queueMap.entrySet()) {
+		for (Map.Entry<String, IQueue<IElement>> entry : this.queueBucket.entrySet()) {
 			entry.getValue().stopLoop();
-        }
-	}
-	
-	public synchronized void randomOffer(IElement e) {
-		
-	}
-	
-	public synchronized void loopOffer(IElement e) {
-		counter++;
-		int queueSize = queueMap.size();
-		ListIterator<IQueue<IElement>> it = new ArrayList<?>(queueMap.entrySet()).listIterator(queueSize);
-        while(i.hasPrevious()) {
-            Map.Entry entry=i.previous();
-            System.out.println("key:" + entry.getKey() + ",value:" + entry.getValue());
         }
 	}
 
