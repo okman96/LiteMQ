@@ -4,9 +4,9 @@ import com.okman.litemq.core.element.IElement;
 import com.okman.litemq.core.queue.AbstractPriorityQueue;
 import com.okman.litemq.exception.KeyAleadyExistException;
 
-public class TestQueue extends AbstractPriorityQueue {
+public class Consumer extends AbstractPriorityQueue {
 
-	public TestQueue(String key) throws KeyAleadyExistException {
+	public Consumer(String key) throws KeyAleadyExistException {
 		super(key);
 	}
 
@@ -14,12 +14,14 @@ public class TestQueue extends AbstractPriorityQueue {
 
 	
 	@Override
-	public boolean afterPeek(IElement o) {
+	public boolean afterPeek(IElement e) {
 		try {
-			Thread.sleep(500l);
-		} catch (Exception e) {
+			Thread.sleep(1000);
+			Product product = (Product)e;
+			System.out.println(this.key + ":" + product.getName());
+		} catch (Exception ex) {
+			
 		}
-		
 		return true;
 	}
 
