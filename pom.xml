@@ -3,8 +3,7 @@
   <groupId>com.waxuan</groupId>
   <artifactId>liteMQ</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <description>小幺鸡,简单好用的在线文档管理工具</description>
-  <url>http://waxuanxuan.iteye.com/</url>
+
   
   <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
