@@ -1,4 +1,4 @@
-package com.okman.test;
+package com.okman.simple.demo1;
 
 import com.okman.litemq.core.element.IElement;
 import com.okman.litemq.core.queue.AbstractPriorityQueue;
@@ -6,29 +6,30 @@ import com.okman.litemq.exception.KeyAleadyExistException;
 
 public class Consumer extends AbstractPriorityQueue {
 
+	private static final long serialVersionUID = -5134005198019549797L;
+
+
 	public Consumer(String key) throws KeyAleadyExistException {
 		super(key);
 	}
-
-	private static final long serialVersionUID = -3401592490270098257L;
-
 	
 	@Override
 	public boolean afterPeek(IElement e) {
 		try {
-			Thread.sleep(1000);
 			Product product = (Product)e;
-			System.out.println(this.key + ":" + product.getName());
+			
+			if (product.getIndex() < 0) {
+				return false;
+			}
 		} catch (Exception ex) {
 			
 		}
 		return true;
 	}
 
-
 	@Override
 	public void reoffer(IElement o) {
-		
+		System.out.println(o);
 	}
 
 }
