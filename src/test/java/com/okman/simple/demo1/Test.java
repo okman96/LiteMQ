@@ -71,21 +71,6 @@ public class Test {
 				}
 	        }
 		});
-		
-		/*executor1.execute(new Runnable() {
-			public void run() {
-				System.out.println(1111);
-				try {
-					Thread.sleep(8000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.out.println(LitemqHelper.getElementSize(factory));
-				System.out.println(LitemqHelper.getElementSize(factory, "order1"));
-			}
-		});*/
-		
 	}
 	
 }

@@ -4,6 +4,8 @@ import com.okman.litemq.core.element.IElement;
 
 /**
  * 产品实体
+ * 
+ * 需实现IElement接口
  *
  * @auth waxuan
  * @since 2018年7月20日下午1:34:41
@@ -25,6 +27,10 @@ public class Product implements IElement {
 	 */
 	private long price;
 	
+	/* 
+	 * 自定义排序方式
+	 * 一般情况下请使用index属性进行排序
+	 */
 	public int compareTo(IElement o) {
 		if(this.getIndex() >= o.getIndex())
             return 1;
