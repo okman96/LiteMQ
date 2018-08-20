@@ -121,6 +121,7 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
 		}
     }
     
+    @Override
     public void await(long time) {
     	synchronized(lock) {
     		logger.info("###### " + key + " is waiting " + time + " millisecond ...,  ######");
