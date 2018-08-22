@@ -15,15 +15,18 @@
  */
 package com.okman.litemq.core.queue;
 
+import java.io.File;
 import java.util.PriorityQueue;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.okman.litemq.Config;
 import com.okman.litemq.core.element.IElement;
 import com.okman.litemq.exception.ExecutorNotInjectException;
 import com.okman.litemq.exception.KeyAleadyExistException;
+import com.okman.litemq.persistence.Persistence;
 
 /**
  * litemq优先队列
@@ -53,6 +56,11 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
 	protected String key;
 	
 	/**
+	 * 总控配置
+	 */
+	protected Config config = Config.getInstance();
+	
+	/**
 	 * 线程锁
 	 */
 	protected Byte[] lock = new Byte[1];
@@ -73,12 +81,20 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
 		this.executor = executor;
 	}
 	
+	public Config getConfig() {
+		return config;
+	}
+
+	public void setConfig(Config config) {
+		this.config = config;
+	}
+
 	public void startLoop() throws ExecutorNotInjectException {
 		if (executor == null) {
 			throw new ExecutorNotInjectException("未注入Executor");
 		}
 		if (isLoop) {
-			logger.info("###### " + key + " is already startLoop! ######");
+			logger.warn("###### " + key + " is already startLoop! ######");
 		}
 		isLoop = true;
 		executor.execute(new Runnable() {
@@ -100,10 +116,14 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
     public boolean offer(IElement e) {
 		synchronized(lock) {
     		lock.notifyAll();
-            return super.offer(e);
+    		boolean b = super.offer(e);
+    		if (config.getIsPersistence()) {
+    			Persistence.getInstance().save(e);
+    		}
+            return b;
     	}
     }
-
+	
 	public void stopLoop() {
 		this.isLoop = false;
 	}
@@ -111,11 +131,11 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
     public void await() {
     	synchronized(lock) {
 			if (this.size() == 0) {
-				logger.info("###### " + getKey() + " is empty, waiting...... ######");
+				logger.debug("###### " + getKey() + " is empty, waiting...... ######");
 				try {
 					lock.wait();
 				} catch (InterruptedException e) {
-					logger.error("###### await error ######", e);
+					logger.error("###### await() error ######", e);
 				}
 			}
 		}
@@ -124,11 +144,11 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
     @Override
     public void await(long time) {
     	synchronized(lock) {
-    		logger.info("###### " + key + " is waiting " + time + " millisecond ...,  ######");
+    		logger.debug("###### " + key + " is waiting " + time + " millisecond   ######");
 			try {
 				lock.wait(time);
 			} catch (InterruptedException e) {
-				logger.error("###### await error ######", e);
+				logger.error("###### await(long time) error ######", e);
 			}
 		}
     }
@@ -140,34 +160,28 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
      * @since 2018年7月19日下午3:18:44
      */
     private void loopExcute() {
-    	IElement o = poll();
-    	if (!afterPeek(o)) {
-    		reoffer(o);
-    	} 
+    	IElement e = poll();
+    	long difference = e.getIndex() - System.currentTimeMillis();
+    	if (difference <= 0) {
+    		afterPeek(e);
+    		if (config.getIsPersistence()) {
+    			File file = new File(config.getPersistenceDir(), e.getIndex() + config.getPersistenceSuffix());
+    			file.delete();
+    		}
+    	} else {
+    		offer(e);
+    		await(difference);
+    	}
     }
     
     /**
      * 取出元素后的操作
-     * 
-     * <p>如果取出元素后不再需要该元素则返回true</p>
-     * <p>如果取出元素后仍再需要该元素则返回false，接着会执行repush(IElement o)方法</p>
      * 
      * @auth waxuan
      * @since 2018年7月19日下午3:19:11
      * @param o
      * @return
      */
-    public abstract boolean afterPeek(IElement o);
-    
-    /**
-     * 重新放入元素
-     * 
-     * <p>放入操作需要实现类进行实现</p>
-     *
-     * @auth waxuan
-     * @since 2018年7月19日下午3:21:13
-     * @param o
-     */
-    public abstract void reoffer(IElement o);
+    public abstract void afterPeek(IElement o);
     
 }

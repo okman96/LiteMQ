@@ -1,12 +1,15 @@
 package com.okman.simple.demo1;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import com.okman.litemq.Config;
 import com.okman.litemq.core.factory.ILitemqFactory;
 import com.okman.litemq.core.factory.LitemqFactory;
 import com.okman.litemq.util.LitemqHelper;
@@ -28,9 +31,8 @@ public class Test {
 		 */
 		List<String> keys = new ArrayList<String>();
 		keys.add("order1");
-		keys.add("order2");
-		keys.add("order3");
-		keys.add("order4");
+		Config.getInstance().setIsPersistence(true);	//是否开启持久化
+		Config.getInstance().setIsPersistenceInitLoad(true);	//启动时是否加载持久化文件
 		ILitemqFactory factory = new LitemqFactory("com.okman.simple.demo1.Consumer", keys, executor1);
 		
 		/**
@@ -38,37 +40,18 @@ public class Test {
 		 */
 		executor1.execute(new Runnable() {
 			public void run() {
-				for (int i=0;i<10;i++) {
-					try {
-						Thread.sleep(200);
-					} catch (Exception e) {
-						System.out.println(e);
-					}
+				for (int i=0;i<50;i++) {
 					Product product = new Product();
-					product.setIndex(i);
-					product.setName("名称-" + i);
+					int randomInt = 1000 + ((int) (new Random().nextFloat() * (100000 - 1000)));
+					long index = System.currentTimeMillis() + randomInt;
+					String name = "名称-" + i;
+					product.setIndex(index);
+					product.setName(name);
 					product.setPrice(Long.valueOf(i + 20 + ""));
-					LitemqHelper.randomOffer(factory, product);
+					System.out.println("放入元素:" + name + " ，开始推送的时间为：" + DateUtil.dateToStr(new Date(index)));
+					LitemqHelper.loopOffer(factory, product);
 				}
-				System.out.println("等待一会，再放入数据......");
-				try {
-					Thread.sleep(2000);
-				} catch (Exception e) {
-					System.out.println(e);
-				}
-				System.out.println("继续放入数据。。。。。");
-				for (int i=0;i<10;i++) {
-					try {
-						Thread.sleep(200);
-					} catch (Exception e) {
-						System.out.println(e);
-					}
-					Product product = new Product();
-					product.setIndex(i);
-					product.setName("名称-" + i);
-					product.setPrice(Long.valueOf(i + 20 + ""));
-					LitemqHelper.randomOffer(factory, product);
-				}
+				System.out.println("--------------------------------------------");
 	        }
 		});
 	}
