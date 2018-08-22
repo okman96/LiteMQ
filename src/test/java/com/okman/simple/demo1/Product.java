@@ -1,5 +1,7 @@
 package com.okman.simple.demo1;
 
+import java.io.Serializable;
+
 import com.okman.litemq.core.element.IElement;
 
 /**
@@ -10,8 +12,10 @@ import com.okman.litemq.core.element.IElement;
  * @auth waxuan
  * @since 2018年7月20日下午1:34:41
  */
-public class Product implements IElement {
+public class Product implements IElement,Serializable{
 	
+	private static final long serialVersionUID = 2565276049357086111L;
+
 	/**
 	 * 产品生产编号
 	 */

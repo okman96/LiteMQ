@@ -15,7 +15,9 @@
  */
 package com.okman.litemq.util;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.okman.litemq.core.element.IElement;
 import com.okman.litemq.core.factory.ILitemqFactory;
@@ -30,6 +32,11 @@ import com.okman.litemq.exception.QueueNotFoundException;
  * @since 2018年7月19日下午2:48:30
  */
 public class LitemqHelper {
+	
+	/**
+	 * offer轮询计数器
+	 */
+	private static int loopOfferIndex = 0;
 	
 	/**
 	 * 返回队列当前元素个数
@@ -127,6 +134,34 @@ public class LitemqHelper {
 	/**
 	 * 通过工厂放入元素
 	 *
+	 * <p>可解决多队列时，顺序放入的场景</p>
+	 *
+	 * @auth waxuan
+	 * @since 2018年7月20日下午1:48:16
+	 * @param factory
+	 * @param e
+	 */
+	public synchronized static void loopOffer(ILitemqFactory factory, IElement e) {
+		Map<String, IQueue<IElement>> queueBucket = factory.getQueueBucket();
+		Iterator<Entry<String, IQueue<IElement>>> it = queueBucket.entrySet().iterator();  
+		int index = 0;
+		while (it.hasNext()) { 
+			Entry<String, IQueue<IElement>> entry = it.next();
+			if (loopOfferIndex == index) {
+				entry.getValue().offer(e);
+				break;
+			} else {
+				index ++;
+			}
+		}
+		if (++loopOfferIndex >= queueBucket.size()) {
+			loopOfferIndex = 0;
+		}
+	}
+	
+	/**
+	 * 通过工厂放入元素
+	 *
 	 * <p>可解决多队列时，随机放入的场景</p>
 	 *
 	 * @auth waxuan
@@ -134,7 +169,7 @@ public class LitemqHelper {
 	 * @param factory
 	 * @param e
 	 */
-	public static void randomOffer(ILitemqFactory factory, IElement e) {
+	public synchronized static void randomOffer(ILitemqFactory factory, IElement e) {
 		MapUtil.getRandomValueFromMap(factory.getQueueBucket()).offer(e);
 	}
 	
