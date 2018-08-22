@@ -12,7 +12,7 @@ import com.okman.litemq.core.element.IElement;
  * @auth waxuan
  * @since 2018年7月20日下午1:34:41
  */
-public class Product implements IElement,Serializable{
+public class Product implements IElement, Serializable{
 	
 	private static final long serialVersionUID = 2565276049357086111L;
 

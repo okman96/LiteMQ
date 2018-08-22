@@ -31,7 +31,7 @@ public class Test {
 		 */
 		List<String> keys = new ArrayList<String>();
 		keys.add("order1");
-		keys.add("order2");
+//		keys.add("order2");
 		Config.getInstance().setIsPersistence(true);	//是否开启持久化
 		Config.getInstance().setIsPersistenceInitLoad(true);	//启动时是否加载持久化文件
 		ILitemqFactory factory = new LitemqFactory("com.okman.simple.demo1.Consumer", keys, executor1);

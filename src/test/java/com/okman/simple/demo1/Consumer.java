@@ -40,9 +40,7 @@ public class Consumer extends AbstractPriorityQueue {
 	public void afterPeek(IElement e) {
 		try {
 			Product product = (Product)e;
-			if (product.getIndex() <= System.currentTimeMillis()) {
-				System.out.println("应发送时间:" + DateUtil.dateToStr(new Date(e.getIndex())) + ",当前时间为：" + DateUtil.dateToStr(new Date(System.currentTimeMillis())) + ",业务处理，pop元素：" + product.getName());
-			}
+			System.out.println("应发送时间:" + DateUtil.dateToStr(new Date(e.getIndex())) + ",当前时间为：" + DateUtil.dateToStr(new Date(System.currentTimeMillis())) + ",业务处理，pop元素：" + product.getName());
 		} catch (Exception ex) {
 			logger.error("###### afterPeek ######", ex);
 		}
