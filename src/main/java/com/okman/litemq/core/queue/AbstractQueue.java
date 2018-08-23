@@ -15,30 +15,24 @@
  */
 package com.okman.litemq.core.queue;
 
-import java.io.File;
-import java.util.PriorityQueue;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.okman.litemq.Config;
 import com.okman.litemq.core.element.IElement;
 import com.okman.litemq.exception.ExecutorNotInjectException;
 import com.okman.litemq.exception.KeyAleadyExistException;
-import com.okman.litemq.persistence.Persistence;
 
 /**
- * litemq优先队列
+ * litemq先进先出队列
  *
  * @auth waxuan
- * @since 2018年7月19日下午3:22:45
+ * @since 2018年8月22日下午5:34:05
  */
-public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> implements IQueue<IElement> {
+public abstract class AbstractQueue extends java.util.AbstractQueue<IElement> implements IQueue<IElement> {
 
-	private static final long serialVersionUID = -6259230902061199971L;
-
-	private static final Log logger = LogFactory.getLog(AbstractPriorityQueue.class);
+	private static final Log logger = LogFactory.getLog(AbstractQueue.class);
 	
 	/**
 	 * 异步类
@@ -56,16 +50,11 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
 	protected String key;
 	
 	/**
-	 * 总控配置
-	 */
-	protected Config config = Config.getInstance();
-	
-	/**
 	 * 线程锁
 	 */
 	protected Byte[] lock = new Byte[1];
 	
-	public AbstractPriorityQueue(String key) throws KeyAleadyExistException {
+	public AbstractQueue(String key) throws KeyAleadyExistException {
 		this.key = key;
 	}
 	
@@ -79,14 +68,6 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
 	
 	public void setExecutor(Executor executor) {
 		this.executor = executor;
-	}
-	
-	public Config getConfig() {
-		return config;
-	}
-
-	public void setConfig(Config config) {
-		this.config = config;
 	}
 
 	public void startLoop() throws ExecutorNotInjectException {
@@ -109,25 +90,13 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
 		});
 	}
 	
-	/**
-	 * 重写offer(O o)方法
-	 */
-	@Override
-    public boolean offer(IElement e) {
-		synchronized(lock) {
-    		lock.notifyAll();
-    		boolean b = super.offer(e);
-    		if (config.getIsPersistence()) {
-    			Persistence.getInstance().save(e);
-    		}
-            return b;
-    	}
-    }
 	
+	@Override
 	public void stopLoop() {
 		this.isLoop = false;
 	}
 	
+	@Override
     public void await() {
     	synchronized(lock) {
 			if (this.size() == 0) {
@@ -159,20 +128,7 @@ public abstract class AbstractPriorityQueue extends PriorityQueue<IElement> impl
      * @auth waxuan
      * @since 2018年7月19日下午3:18:44
      */
-    private void loopExcute() {
-    	IElement e = poll();
-    	long difference = e.getIndex() - System.currentTimeMillis();
-    	if (difference <= 0) {
-    		afterPeek(e);
-    		if (config.getIsPersistence()) {
-    			File file = new File(config.getPersistenceDir(), e.getIndex() + config.getPersistenceSuffix());
-    			file.delete();
-    		}
-    	} else {
-    		offer(e);
-    		await(difference);
-    	}
-    }
+    public abstract void loopExcute();
     
     /**
      * 取出元素后的操作

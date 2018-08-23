@@ -1,4 +1,4 @@
-package com.okman.simple.demo1;
+package com.okman.simple.demo2;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,7 +42,7 @@ public class Test {
 		keys.add("order3");
 		Config.getInstance().setIsPersistence(false);	//是否开启持久化
 		Config.getInstance().setIsPersistenceInitLoad(false);	//启动时是否加载持久化文件
-		ILitemqFactory factory = new LitemqFactory("com.okman.simple.demo1.Consumer", keys, executor1);
+		ILitemqFactory factory = new LitemqFactory("com.okman.simple.demo2.Consumer", keys, executor1);
 		
 		/**
 		 * 创建生产者，创建产品
@@ -50,6 +50,12 @@ public class Test {
 		executor1.execute(new Runnable() {
 			public void run() {
 				for (int i=0;i<10;i++) {
+					try {
+						Thread.sleep(1000l);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					Product product = new Product();
 					int randomInt = 1000 + ((int) (new Random().nextFloat() * (100000 - 1000)));
 					long index = System.currentTimeMillis() + randomInt;

@@ -90,5 +90,14 @@ public interface IQueue<IElement> extends java.util.Queue<IElement> {
 	 * @param time		单位：毫秒
 	 */
 	void await(long time);
+	
+	/**
+	 * 获取持久化前缀
+	 *
+	 * @auth waxuan
+	 * @since 2018年8月23日上午9:19:18
+	 * @return
+	 */
+	String getPersistencePrefix();
 
 }

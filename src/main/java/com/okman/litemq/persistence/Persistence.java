@@ -48,11 +48,11 @@ public class Persistence {
 	 * @since 2018年8月21日下午2:47:09
 	 * @param e
 	 */
-	public void save(IElement e) {
+	public void save(String prefix, IElement e) {
 		ObjectOutputStream oo = null;
 		try {
 			File dir = this.getFile();
-			File file = new File(dir, e.getIndex() + Config.getInstance().getPersistenceSuffix());
+			File file = new File(dir, prefix + e.getIndex() + Config.getInstance().getPersistenceSuffix());
 			oo = new ObjectOutputStream(new FileOutputStream(file));
 			oo.writeObject(e);
 		} catch (Exception ex) {
@@ -97,6 +97,7 @@ public class Persistence {
 		try {
 			ois = new ObjectInputStream(new FileInputStream(file));
 			IElement e = (IElement) ois.readObject();
+			System.out.println("---------" + e.getIndex() + "-------");
 			return e;
 		} catch (Exception ex) {
 			logger.error("###### get ######", ex);
@@ -119,7 +120,7 @@ public class Persistence {
 	 * @since 2018年8月22日下午12:02:05
 	 * @param queue
 	 */
-	public void initLoad(IQueue<IElement> queue) {
+	public synchronized void initLoad(IQueue<IElement> queue, String prefix) {
 		Config config = Config.getInstance(); 
 		if (config.getIsPersistenceInitLoad()) {
 			if (config.getIsPersistence()) {
@@ -129,8 +130,11 @@ public class Persistence {
     				if (fileArr.length > 0) {
     					IElement[] elements = new IElement[fileArr.length];
     					for (int i = 0;i < fileArr.length;i++) {
-    						elements[i] = Persistence.getInstance().get(fileArr[i]);
-    						fileArr[i].delete();
+    						File file = fileArr[i];
+    						if (file.getName().indexOf(prefix) == 0) {
+    							elements[i] = get(fileArr[i]);
+        						fileArr[i].delete();
+    						}
     					}
     					for (IElement e : elements) {
     						queue.offer(e);

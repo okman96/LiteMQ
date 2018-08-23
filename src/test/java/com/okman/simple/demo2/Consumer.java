@@ -1,4 +1,4 @@
-package com.okman.simple.demo1;
+package com.okman.simple.demo2;
 
 import java.util.Date;
 
@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.okman.litemq.core.element.IElement;
+import com.okman.litemq.core.queue.arraydequeue.AbstractArrayDeQueue;
 import com.okman.litemq.core.queue.priorityqueue.AbstractPriorityQueue;
 import com.okman.litemq.exception.KeyAleadyExistException;
 import com.okman.simple.util.DateUtil;
@@ -18,7 +19,7 @@ import com.okman.simple.util.DateUtil;
  * @auth waxuan
  * @since 2018年8月20日上午11:01:59
  */
-public class Consumer extends AbstractPriorityQueue {
+public class Consumer extends AbstractArrayDeQueue {
 
 	private static final Log logger = LogFactory.getLog(AbstractPriorityQueue.class);
 	

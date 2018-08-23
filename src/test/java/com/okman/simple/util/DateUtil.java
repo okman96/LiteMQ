@@ -1,4 +1,4 @@
-package com.okman.simple.demo1;
+package com.okman.simple.util;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;

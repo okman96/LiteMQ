@@ -44,12 +44,12 @@
 		  	<version>1.7.19</version>
 		</dependency>
 		
-		<!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
 		<dependency>
-		    <groupId>com.google.protobuf</groupId>
-		    <artifactId>protobuf-java</artifactId>
-		    <version>3.6.1</version>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<version>3.6.1</version>
 		</dependency>
+		
 	</dependencies>
 	
 	<build>

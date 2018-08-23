@@ -16,11 +16,9 @@
 package com.okman.litemq.core.factory;
 
 import java.lang.reflect.Constructor;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 
 import com.okman.litemq.core.element.IElement;
@@ -31,7 +29,7 @@ import com.okman.litemq.exception.QueueNotFoundException;
 import com.okman.litemq.persistence.Persistence;
 
 /**
- * litemq队列工厂
+ * 有先队列工厂
  *
  * @auth waxuan
  * @since 2018年7月19日下午2:55:11
@@ -42,6 +40,11 @@ public class LitemqFactory implements ILitemqFactory {
 	 * 存储队列集合
 	 */
 	private Map<String, IQueue<IElement>> queueBucket = new LinkedHashMap<String, IQueue<IElement>>();
+	
+	/**
+	 * 是否已经加载过持久化
+	 */
+	private boolean loadPersistenced = false;
 	
 	public LitemqFactory() {
 		
@@ -74,6 +77,15 @@ public class LitemqFactory implements ILitemqFactory {
 			throw new KeyAleadyExistException("该key已存在");
 		}
 		IQueue<IElement> queue = this.create(qualifiedQueueClassName, key);
+		
+		/**
+		 * 启动推送持久化中的元素
+		 */
+		if (!loadPersistenced) {
+			Persistence.getInstance().initLoad(queue, queue.getPersistencePrefix());
+			loadPersistenced = true;
+		}
+		
 		queue.setExecutor(executor);
 		queue.startLoop();
 		return queue;
@@ -93,17 +105,6 @@ public class LitemqFactory implements ILitemqFactory {
 		}
 		IQueue<IElement> queue = this.createQueueInReflect(qualifiedQueueClassName, key);
 		this.queueBucket.put(key, queue);
-		
-		/**
-		 * 启动推送持久化中的元素
-		 */
-		Map<String, IQueue<IElement>> queueBucket = this.getQueueBucket();
-		Iterator<Entry<String, IQueue<IElement>>> it = queueBucket.entrySet().iterator();  
-		while (it.hasNext()) { 
-			Persistence.getInstance().initLoad(it.next().getValue());
-			break;
-		}
-		
 		return queue;
 	}
 	
