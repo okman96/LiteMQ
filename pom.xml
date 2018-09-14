@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.okman</groupId>
   <artifactId>liteMQ</artifactId>
-  <version>1.0.1</version>
+  <version>1.0</version>
 
   	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -11,6 +11,13 @@
 	</properties>
   
   	<dependencies>
+  	
+  		<!-- junit -->
+  		<dependency>
+		    <groupId>junit</groupId>
+		    <artifactId>junit</artifactId>
+		    <version>4.12</version>
+		</dependency>
   	
   		<!-- commons-lang3 -->
 		<dependency>
@@ -61,30 +68,41 @@
                 <configuration>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <compilerVersion>${java.version}</compilerVersion>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <fork>true</fork>
-                    <compilerArguments>
-                        <extdirs>${project.basedir}/src/main/webapp/WEB-INF/lib/</extdirs>
-                    </compilerArguments>
+                    <source>${java.version}</source>	<!-- 源代码使用的JDK版本 -->   
+                    <target>${java.version}</target>	<!-- 需要生成的目标class文件的编译版本 -->  
+                    <encoding>UTF-8</encoding><!-- 字符集编码 -->
+			        <verbose>true</verbose>
+			        <showWarnings>true</showWarnings>                                                                                                               
+			        <fork>true</fork><!-- 要使compilerVersion标签生效，还需要将fork设为true，用于明确表示编译版本配置的可用 -->                                                        
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
+            
+            <!-- 排除测试代码 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.18.1</version>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
+            <!-- resources -->
+			<plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        	<artifactId>maven-source-plugin</artifactId>
+		        	<version>2.4</version>
+		        	<executions>
+		          		<execution>
+		            		<id>attach-sources</id>
+				            <phase>verify</phase><!--  要绑定到的生命周期的阶段 在verify之后，install之前执行下面指定的goal -->
+				            <goals>
+				              <goal>jar-no-fork</goal><!-- 类似执行mvn source:jar -->
+				            </goals>
+		          		</execution>
+		        	</executions>
+		      </plugin>
+			
         </plugins>
     </build>
   
