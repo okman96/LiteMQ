@@ -28,12 +28,6 @@ public class Test {
 		PropertyConfigurator.configure(path +"com/okman/simple/log4j.properties");  
 		
 		/**
-		 * 创建线程池
-		 */
-		int taskSize = 1;
-		Executor executor1 = Executors.newFixedThreadPool(taskSize);
-		
-		/**
 		 * 创建消费者，并开启遍历模式
 		 */
 		List<String> keys = new ArrayList<String>();
@@ -47,6 +41,8 @@ public class Test {
 		/**
 		 * 创建生产者，创建产品
 		 */
+		int taskSize = 1;
+		Executor executor1 = Executors.newFixedThreadPool(taskSize);
 		executor1.execute(new Runnable() {
 			public void run() {
 				for (int i=0;i<10;i++) {
