@@ -30,19 +30,19 @@ public class Test {
 		/**
 		 * 创建线程池
 		 */
-		int taskSize = 5;
+		int taskSize = 1;
 		Executor executor1 = Executors.newFixedThreadPool(taskSize);
 		
 		/**
 		 * 创建消费者，并开启遍历模式
 		 */
 		List<String> keys = new ArrayList<String>();
-		keys.add("order1");
-		keys.add("order2");
-		keys.add("order3");
-		Config.getInstance().setIsPersistence(false);	//是否开启持久化
-		Config.getInstance().setIsPersistenceInitLoad(false);	//启动时是否加载持久化文件
-		ILitemqFactory factory = new LitemqFactory("com.okman.simple.demo1.Consumer", keys, executor1);
+		keys.add("线程-order1");
+		keys.add("线程-order2");
+		keys.add("线程-order3");
+		Config.getInstance().setIsPersistence(true);	//是否开启持久化
+		Config.getInstance().setIsPersistenceInitLoad(true);	//启动时是否加载持久化文件
+		ILitemqFactory factory = new LitemqFactory("com.okman.simple.demo1.Consumer", keys, true);
 		
 		/**
 		 * 创建生产者，创建产品

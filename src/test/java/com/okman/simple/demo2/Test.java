@@ -40,9 +40,9 @@ public class Test {
 		keys.add("order1");
 		keys.add("order2");
 		keys.add("order3");
-		Config.getInstance().setIsPersistence(false);	//是否开启持久化
-		Config.getInstance().setIsPersistenceInitLoad(false);	//启动时是否加载持久化文件
-		ILitemqFactory factory = new LitemqFactory("com.okman.simple.demo2.Consumer", keys, executor1);
+		Config.getInstance().setIsPersistence(true);	//是否开启持久化
+		Config.getInstance().setIsPersistenceInitLoad(true);	//启动时是否加载持久化文件
+		ILitemqFactory factory = new LitemqFactory("com.okman.simple.demo2.Consumer", keys, true);
 		
 		/**
 		 * 创建生产者，创建产品
@@ -53,7 +53,6 @@ public class Test {
 					try {
 						Thread.sleep(1000l);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					Product product = new Product();
@@ -63,7 +62,7 @@ public class Test {
 					product.setIndex(index);
 					product.setName(name);
 					product.setPrice(Long.valueOf(i + 20 + ""));
-					System.out.println("放入元素:" + name + " ，开始推送的时间为：" + DateUtil.dateToStr(new Date(index)));
+					System.out.println("放入元素:" + name + " ，开始推送的时间为：" + DateUtil.dateToStr(new Date()));
 					LitemqHelper.loopOffer(factory, product);
 				}
 				System.out.println("--------------------------------------------");
