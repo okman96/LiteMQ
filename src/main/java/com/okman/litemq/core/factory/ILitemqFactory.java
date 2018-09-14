@@ -18,7 +18,6 @@ package com.okman.litemq.core.factory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 import com.okman.litemq.core.element.IElement;
 import com.okman.litemq.core.queue.IQueue;
@@ -44,23 +43,6 @@ public interface ILitemqFactory {
 	Map<String, IQueue<IElement>> getQueueBucket();
 	
 	/**
-	 * 创建队列并开启遍历模式
-	 *
-	 * @auth waxuan
-	 * @since 2018年7月19日下午2:57:14
-	 * @param qualifiedQueueClassName
-	 * 						队列类的全限定名称
-	 * @param key
-	 * 						队列key
-	 * @param executor
-	 * 						异步类
-	 * @return
-	 * @throws KeyAleadyExistException
-	 * @throws ExecutorNotInjectException
-	 */
-	IQueue<IElement> createAndLoop(String qualifiedQueueClassName, String key, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException;
-	
-	/**
 	 * 批量创建队列并开启遍历模式
 	 *
 	 * @auth waxuan
@@ -69,28 +51,12 @@ public interface ILitemqFactory {
 	 * 						队列类的全限定名称
 	 * @param keys
 	 * 						队列key
-	 * @param executor
-	 * 						异步类
 	 * @return
 	 * @throws KeyAleadyExistException
 	 * @throws ExecutorNotInjectException
 	 */
-	void createAndLoop(String qualifiedQueueClassName, List<String> keys, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException;
+	void createAndLoop(String qualifiedQueueClassName, List<String> keys) throws KeyAleadyExistException, ExecutorNotInjectException;
 	
-	/**
-	 * 创建队列
-	 *
-	 * @auth waxuan
-	 * @since 2018年7月19日下午2:57:54
-	 * @param qualifiedQueueClassName
-	 * 								队列类的全限定名称
-	 * @param key
-	 * 								队列key
-	 * @return
-	 * @throws Exception
-	 */
-	IQueue<IElement> create(String qualifiedQueueClassName, String key) throws KeyAleadyExistException;
-
 	/**
 	 * 批量创建队列
 	 *
@@ -127,7 +93,7 @@ public interface ILitemqFactory {
 	void removeQueue(String key) throws QueueNotFoundException;
 	
 	/**
-	 * 开启队列的便利模式
+	 * 开启队列的遍历模式
 	 *
 	 * @auth waxuan
 	 * @since 2018年7月19日下午3:03:07

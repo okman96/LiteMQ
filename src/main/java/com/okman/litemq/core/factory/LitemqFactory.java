@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.okman.litemq.core.element.IElement;
 import com.okman.litemq.core.queue.IQueue;
@@ -46,24 +47,15 @@ public class LitemqFactory implements ILitemqFactory {
 	 */
 	private boolean loadPersistenced = false;
 	
-	public LitemqFactory() {
+	public LitemqFactory() {}
+	
+	public LitemqFactory(String qualifiedQueueClassName, List<String> keys, boolean isLoop) throws KeyAleadyExistException, ExecutorNotInjectException {
+		if (isLoop) {
+			this.createAndLoop(qualifiedQueueClassName, keys);
+		} else {
+			this.create(qualifiedQueueClassName, keys);
+		}
 		
-	}
-	
-	public LitemqFactory(String qualifiedQueueClassName, String key) throws KeyAleadyExistException {
-		this.create(qualifiedQueueClassName, key);
-	}
-	
-	public LitemqFactory(String qualifiedQueueClassName, List<String> keys) throws KeyAleadyExistException {
-		this.create(qualifiedQueueClassName, keys);
-	}
-	
-	public LitemqFactory(String qualifiedQueueClassName, String key, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
-		this.createAndLoop(qualifiedQueueClassName, key, executor);
-	}
-	
-	public LitemqFactory(String qualifiedQueueClassName, List<String> keys, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
-		this.createAndLoop(qualifiedQueueClassName, keys, executor);
 	}
 
 	@Override
@@ -72,46 +64,34 @@ public class LitemqFactory implements ILitemqFactory {
 	}
 	
 	@Override
-	public IQueue<IElement> createAndLoop(String qualifiedQueueClassName, String key, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
-		if (this.queueBucket.containsKey(key)) {
-			throw new KeyAleadyExistException("该key已存在");
-		}
-		IQueue<IElement> queue = this.create(qualifiedQueueClassName, key);
-		
-		/**
-		 * 启动推送持久化中的元素
-		 */
-		if (!loadPersistenced) {
-			Persistence.getInstance().initLoad(queue, queue.getPersistencePrefix());
-			loadPersistenced = true;
-		}
-		
-		queue.setExecutor(executor);
-		queue.startLoop();
-		return queue;
-	}
-	
-	@Override
-	public void createAndLoop(String qualifiedQueueClassName, List<String> keys, Executor executor) throws KeyAleadyExistException, ExecutorNotInjectException {
+	public void createAndLoop(String qualifiedQueueClassName, List<String> keys) throws KeyAleadyExistException, ExecutorNotInjectException {
+		Executor executor = Executors.newFixedThreadPool(keys.size());
 		for (String key : keys) {
-			this.createAndLoop(qualifiedQueueClassName, key, executor);
+			if (this.queueBucket.containsKey(key)) {
+				throw new KeyAleadyExistException("该key已存在");
+			}
+			IQueue<IElement> queue = this.createQueueInReflect(qualifiedQueueClassName, key);
+			this.queueBucket.put(key, queue);
+			/**
+			 * 启动推送持久化中的元素
+			 */
+			if (!loadPersistenced) {
+				Persistence.getInstance().initLoad(queue, queue.getPersistencePrefix());
+				loadPersistenced = true;
+			}
+			queue.setExecutor(executor);
+			queue.startLoop();
 		}
-	}
-	
-	@Override
-	public IQueue<IElement> create(String qualifiedQueueClassName, String key) throws KeyAleadyExistException {
-		if (this.queueBucket.containsKey(key)) {
-			throw new KeyAleadyExistException("该key已存在");
-		}
-		IQueue<IElement> queue = this.createQueueInReflect(qualifiedQueueClassName, key);
-		this.queueBucket.put(key, queue);
-		return queue;
 	}
 	
 	@Override
 	public void create(String qualifiedQueueClassName, List<String> keys) throws KeyAleadyExistException {
 		for (String key : keys) {
-			this.create(qualifiedQueueClassName, key);
+			if (this.queueBucket.containsKey(key)) {
+				throw new KeyAleadyExistException("该key已存在");
+			}
+			IQueue<IElement> queue = this.createQueueInReflect(qualifiedQueueClassName, key);
+			this.queueBucket.put(key, queue);
 		}
 	}
 	
@@ -182,7 +162,6 @@ public class LitemqFactory implements ILitemqFactory {
 			} catch (Exception e) {
 				System.err.println(e);
 			}
-			
         }
 	}
 

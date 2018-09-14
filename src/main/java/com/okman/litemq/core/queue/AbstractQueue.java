@@ -70,6 +70,7 @@ public abstract class AbstractQueue extends java.util.AbstractQueue<IElement> im
 		this.executor = executor;
 	}
 
+	@Override
 	public void startLoop() throws ExecutorNotInjectException {
 		if (executor == null) {
 			throw new ExecutorNotInjectException("未注入Executor");

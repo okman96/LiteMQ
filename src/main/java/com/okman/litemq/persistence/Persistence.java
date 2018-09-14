@@ -97,7 +97,6 @@ public class Persistence {
 		try {
 			ois = new ObjectInputStream(new FileInputStream(file));
 			IElement e = (IElement) ois.readObject();
-			System.out.println("---------" + e.getIndex() + "-------");
 			return e;
 		} catch (Exception ex) {
 			logger.error("###### get ######", ex);
